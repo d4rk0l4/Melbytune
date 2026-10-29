@@ -33,6 +33,15 @@ APPS = [
     ("MSTeams", "Microsoft Teams (versão pessoal, Win 11)"),
 ]
 
+# Só o lixo mais óbvio (usado pelo pacote Davi Zone)
+LEVE = [
+    "Microsoft.MicrosoftSolitaireCollection", "king.com.CandyCrushSaga", "king.com.CandyCrushSodaSaga",
+    "Microsoft.BingNews", "Microsoft.MicrosoftOfficeHub", "Microsoft.GetHelp", "Microsoft.Getstarted",
+    "Microsoft.WindowsFeedbackHub", "Microsoft.ZuneVideo", "Microsoft.People", "Microsoft.SkypeApp",
+    "Microsoft.MixedReality.Portal", "Microsoft.Microsoft3DViewer", "Clipchamp.Clipchamp",
+    "Microsoft.549981C3F5F10",
+]
+
 _VALID = {pkg for pkg, _ in APPS}
 
 

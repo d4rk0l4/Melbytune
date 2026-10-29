@@ -1,6 +1,6 @@
-# MelbyTune
+# MelbyTune — Seu PC. Seu ritmo.
 
-Otimizador de PC pessoal (Windows 10/11). Tema escuro com amarelo.
+Otimizador de PC pessoal (Windows 10/11). Preto, amarelo-mel e roxo.
 
 ## Pra quem só quer usar (sem Python)
 Peça o `MelbyTune.exe` pronto. Dois detalhes normais pra app sem assinatura digital:
@@ -12,10 +12,11 @@ O app pede permissão de administrador ao abrir. É necessário pra mexer em cha
 ## Gerar o .exe (só quem faz o app precisa de Python)
 O .exe precisa ser gerado no **Windows**. Duas formas:
 
-**A) No seu PC:** instale o Python, dê duplo clique em `build.bat`. O arquivo sai em `dist\MelbyTune.exe`.
+**A) Pelo GitHub (sem instalar nada):** a cada push na `main` o GitHub gera o `.exe` sozinho.
+Vá em *Actions*, abra o último build e baixe `MelbyTune` em **Artifacts**.
+(Também dá pra rodar na mão: Actions > Build MelbyTune > Run workflow.)
 
-**B) Pelo GitHub (sem instalar nada):** suba esta pasta num repositório, vá em
-Actions > Build MelbyTune > Run workflow. Quando terminar, baixe o `MelbyTune.exe` em "Artifacts".
+**B) No seu PC:** instale o Python e dê duplo clique em `build.bat`. O arquivo sai em `dist\MelbyTune.exe`.
 
 ## Rodar direto pelo código
 ```
@@ -24,18 +25,32 @@ python main.py
 ```
 
 ## O que tem
-- **Painel**: CPU, RAM, disco e GPU (GPU só NVIDIA, via nvidia-smi) em tempo real
-- **Ajustes**: 12 ajustes (jogos, privacidade, sistema). Cada um mostra o comando e pode ser desfeito
-- **Limpeza**: temporários, relatórios de erro, cache de shaders e lixeira
-- **Debloat**: remove apps pré-instalados de uma lista segura; dá pra tentar reinstalar
-- **Placas de vídeo**: comparador local (edite os valores em `gpus.py`)
-- **Sistema**: ponto de restauração, plano de energia, "restaurar tudo"
+| Aba | O que faz |
+|---|---|
+| **Painel** | CPU, RAM, disco e GPU (GPU só NVIDIA) em tempo real |
+| **Ajustes** | 20 ajustes em 4 grupos (Jogos, **Input lag**, Privacidade, Sistema). Cada um mostra o comando e desfaz |
+| **Inicialização** | Liga/desliga os programas que abrem com o Windows (mesma chave do Gerenciador de Tarefas) |
+| **Debloat** | Remove apps pré-instalados de uma lista segura; dá pra tentar reinstalar |
+| **Instalar apps** | Marca vários e instala tudo de uma vez pelo winget; "atualizar todos os apps" |
+| **Limpeza** | Temporários, **arquivos duplicados** (vão pra Lixeira) e **arquivos grandes** |
+| **Segurança** | **Antivírus** (comanda o Microsoft Defender: análise rápida/completa/de pasta, ameaças) e **Reparar Windows** (DISM, SFC, CHKDSK) |
+| **Ferramentas** | Teste de CPS, teste de monitor (pixel morto, cores, degradê), teste de velocidade, comparar placas |
+| **Sistema** | Ponto de restauração, plano de energia, "restaurar tudo" |
+| **Davi Zone** | Pacote pro notebook fraco: "Tentar melhorar o desempenho" + gerar ponto de restauração |
+
+### Limites (importante)
+- O **antivírus é o Microsoft Defender** que já vem no Windows. O MelbyTune só comanda ele. Com outro antivírus instalado, o Defender fica passivo.
+- **Reparar Windows** conserta arquivos do *sistema* e erros de disco. Não recupera fotos/documentos seus corrompidos.
+- **Input lag**: o efeito é pequeno e muda de PC pra PC. Não espere milagre.
+- O **Davi Zone** faz melhorias leves. Notebook fraco continua fraco: o que mais resolve é SSD e mais RAM.
 
 ## Como a reversão dos ajustes funciona
-Antes de mudar qualquer chave, o app salva o valor original em
-`%APPDATA%\MelbyTune\backup.json`. Desligar o ajuste restaura esse valor
-(ou apaga a chave, se ela não existia).
+Antes de mudar qualquer chave, o app salva o valor original em `%APPDATA%\MelbyTune\backup.json`.
+Desligar o ajuste restaura esse valor (ou apaga a chave, se ela não existia).
+"Restaurar tudo" (aba Sistema) desfaz todos os ajustes. Debloat e Inicialização têm os próprios botões.
 
-## Adicionar um ajuste novo
-Em `tweaks.py`, adicione um `Tweak(...)` na lista `TWEAKS`. Ele aparece sozinho na aba Ajustes.
-Pra adicionar app no Debloat, inclua `("NomeDoPacote", "Rótulo")` em `debloat.py`.
+## Mexer no código
+- Novo ajuste: `tweaks.py`, adicione um `Tweak(...)` em `TWEAKS` (aparece sozinho na aba Ajustes).
+- Novo app no Debloat: `debloat.py`. Novo app pra instalar: `installer.py` (id do winget).
+- Valores das placas de vídeo: `gpus.py`.
+- Logo e ícone: pasta `assets/` (troque `logo.png`, `icon.png` e `icon.ico`).

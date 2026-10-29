@@ -21,8 +21,11 @@ os.makedirs(APP_DIR, exist_ok=True)
 
 
 def run(cmd, timeout=60):
-    return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout,
-                          creationflags=NOWIN, errors="ignore")
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout,
+                              creationflags=NOWIN, errors="ignore")
+    except (OSError, subprocess.SubprocessError) as e:  # ex.: sem PowerShell fora do Windows
+        return subprocess.CompletedProcess(cmd, 127, "", str(e))
 
 
 # ----------------------------------------------------------------- registro
@@ -192,12 +195,35 @@ TWEAKS = [
           "Jogos",
           [("HKLM", r"SYSTEM\CurrentControlSet\Control\GraphicsDrivers", "HwSchMode", "DWORD", 2)],
           note="Precisa reiniciar o PC."),
+    # ---- Input lag
     Tweak("mouse_accel", "Desligar aceleração do mouse",
-          "Mira 1:1, o movimento da mão vira o movimento do cursor.", "Jogos",
+          "Mira 1:1, o movimento da mão vira o movimento do cursor.", "Input lag",
           [("HKCU", r"Control Panel\Mouse", "MouseSpeed", "SZ", "0"),
            ("HKCU", r"Control Panel\Mouse", "MouseThreshold1", "SZ", "0"),
            ("HKCU", r"Control Panel\Mouse", "MouseThreshold2", "SZ", "0")],
           note="Vale depois de sair e entrar na conta."),
+    Tweak("fse", "Desligar otimização de tela cheia",
+          "Joga em tela cheia 'de verdade', sem a camada extra do Windows que pode atrasar a imagem.",
+          "Input lag",
+          [("HKCU", r"System\GameConfigStore", "GameDVR_FSEBehaviorMode", "DWORD", 2),
+           ("HKCU", r"System\GameConfigStore", "GameDVR_HonorUserFSEBehaviorMode", "DWORD", 1),
+           ("HKCU", r"System\GameConfigStore", "GameDVR_DXGIHonorFSEWindowsCompatible", "DWORD", 1),
+           ("HKCU", r"System\GameConfigStore", "GameDVR_EFSEFeatureFlags", "DWORD", 0)],
+          note="Efeito varia de jogo pra jogo."),
+    Tweak("sticky", "Sem aviso de teclas de aderência",
+          "Apertar Shift 5 vezes (ou segurar) não abre aquele popup que minimiza o jogo.", "Input lag",
+          [("HKCU", r"Control Panel\Accessibility\StickyKeys", "Flags", "SZ", "506"),
+           ("HKCU", r"Control Panel\Accessibility\Keyboard Response", "Flags", "SZ", "122"),
+           ("HKCU", r"Control Panel\Accessibility\ToggleKeys", "Flags", "SZ", "58")]),
+    Tweak("power_throttle", "Desligar economia de energia dos processos",
+          "O Windows para de reduzir a velocidade de programas em segundo plano (o jogo não é freado).",
+          "Input lag",
+          [("HKLM", r"SYSTEM\CurrentControlSet\Control\Power\PowerThrottling", "PowerThrottlingOff", "DWORD", 1)],
+          note="Em notebook, gasta mais bateria."),
+    Tweak("prio_sep", "Mais prioridade pro programa em uso",
+          "Dá preferência de CPU ao jogo/app que você está usando agora.", "Input lag",
+          [("HKLM", r"SYSTEM\CurrentControlSet\Control\PriorityControl", "Win32PrioritySeparation", "DWORD", 38)],
+          note="Efeito sutil."),
     # ---- Privacidade e processos
     Tweak("telemetry", "Reduzir telemetria",
           "Limita o envio de dados de diagnóstico e desativa o serviço DiagTrack.", "Privacidade",
@@ -216,6 +242,14 @@ TWEAKS = [
     Tweak("delivery_opt", "Desligar Otimização de Entrega",
           "O Windows para de usar sua internet pra enviar updates a outros PCs.", "Privacidade",
           [("HKLM", CV + r"\DeliveryOptimization\Config", "DODownloadMode", "DWORD", 0)]),
+    Tweak("activity", "Desligar histórico de atividades",
+          "O Windows para de guardar e enviar o que você abriu (a antiga Linha do Tempo).", "Privacidade",
+          [("HKLM", r"SOFTWARE\Policies\Microsoft\Windows\System", "EnableActivityFeed", "DWORD", 0),
+           ("HKLM", r"SOFTWARE\Policies\Microsoft\Windows\System", "PublishUserActivities", "DWORD", 0),
+           ("HKLM", r"SOFTWARE\Policies\Microsoft\Windows\System", "UploadUserActivities", "DWORD", 0)]),
+    Tweak("websearch", "Pesquisa do Iniciar só no PC",
+          "Tira os resultados da web (Bing) da busca do menu Iniciar. Fica mais rápida.", "Privacidade",
+          [("HKCU", r"Software\Policies\Microsoft\Windows\Explorer", "DisableSearchBoxSuggestions", "DWORD", 1)]),
     # ---- Sistema
     Tweak("sysmain", "Desligar SysMain (Superfetch)",
           "Menos uso de disco/RAM em segundo plano. Use só se o Windows estiver em SSD.", "Sistema",
@@ -230,4 +264,8 @@ TWEAKS = [
     Tweak("transparency", "Desligar transparência",
           "Menos efeito visual, ganha um pouco de GPU em PC fraco.", "Sistema",
           [("HKCU", CV + r"\Themes\Personalize", "EnableTransparency", "DWORD", 0)]),
+    Tweak("animations", "Desligar animações do Windows",
+          "Janelas abrem e fecham na hora, sem efeito. Sensação de PC mais ágil.", "Sistema",
+          [("HKCU", r"Control Panel\Desktop\WindowMetrics", "MinAnimate", "SZ", "0"),
+           ("HKCU", CV + r"\Explorer\Advanced", "TaskbarAnimations", "DWORD", 0)]),
 ]
