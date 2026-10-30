@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import traceback
 import tkinter.messagebox as mb
 
 import customtkinter as ctk
@@ -396,6 +397,56 @@ class App(ctk.CTk):
         mb.showinfo("MelbyTune", "Tudo restaurado. Reabra o app pra atualizar as chaves.")
 
 
+def log_crash(text):
+    """Grava o erro em %APPDATA%\\MelbyTune\\erro.log e avisa na tela (funciona até se o Tk falhar)."""
+    path = os.path.join(tweaks.APP_DIR, "erro.log")
+    try:
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(text + "\n" + "-" * 60 + "\n")
+    except OSError:
+        pass
+    try:
+        ctypes.windll.user32.MessageBoxW(
+            0, f"O MelbyTune encontrou um erro e precisa fechar.\n\nDetalhes salvos em:\n{path}\n\n{text[-600:]}",
+            "MelbyTune - erro", 0x10)
+    except Exception:
+        pass
+
+
+def selftest():
+    """Abre o app, passa por todas as telas e fecha. Usado pelo GitHub pra testar o .exe no Windows."""
+    out = os.path.join(tweaks.APP_DIR, "selftest.txt")
+    errs = []
+    app = App()
+    app.report_callback_exception = lambda *a: errs.append("".join(traceback.format_exception(*a)))
+    names = list(app.pages)
+    i = [0]
+
+    def step():
+        if i[0] < len(names):
+            app.show(names[i[0]])
+            i[0] += 1
+            app.after(500, step)
+        else:
+            app.after(1500, app.quit)
+    app.after(800, step)
+    app.mainloop()
+    app.destroy()
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(("ERROS:\n" + "\n".join(errs)) if errs else f"OK - {len(names)} telas abriram sem erro")
+    return 1 if errs else 0
+
+
 if __name__ == "__main__":
-    ensure_admin()
-    App().mainloop()
+    try:
+        if "--selftest" in sys.argv:
+            sys.exit(selftest())
+        ensure_admin()
+        app = App()
+        app.report_callback_exception = lambda *a: log_crash("".join(traceback.format_exception(*a)))
+        app.mainloop()
+    except SystemExit:
+        raise
+    except BaseException:
+        log_crash(traceback.format_exc())
+        sys.exit(1)
