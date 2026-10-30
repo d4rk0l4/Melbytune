@@ -18,21 +18,39 @@ jobs:
       - name: Instalar dependências
         run: pip install -r requirements.txt
 
-      - name: Gerar o .exe
+      - name: Gerar o .exe (arquivo único)
         run: pyinstaller --noconfirm --onefile --windowed --uac-admin --icon assets/icon.ico --add-data "assets;assets" --collect-all customtkinter --name MelbyTune main.py
 
-      - name: Testar o .exe no Windows (abre, passa por todas as telas e fecha)
+      - name: Gerar a versão em pasta (costuma dar menos alarme falso de antivírus)
+        run: pyinstaller --noconfirm --onedir --windowed --uac-admin --icon assets/icon.ico --add-data "assets;assets" --collect-all customtkinter --name MelbyTune --distpath dist-pasta --workpath build-pasta main.py
+
+      - name: Testar os dois no Windows (abre, passa por todas as telas e fecha)
         shell: pwsh
         run: |
-          $p = Start-Process -FilePath "dist\MelbyTune.exe" -ArgumentList "--selftest" -PassThru -Wait
-          $dir = Join-Path $env:APPDATA "MelbyTune"
-          "--- selftest.txt ---"; if (Test-Path "$dir\selftest.txt") { Get-Content "$dir\selftest.txt" } else { "(não gerou)" }
-          "--- erro.log ---"; if (Test-Path "$dir\erro.log") { Get-Content "$dir\erro.log" } else { "(sem erros)" }
-          "exit code: $($p.ExitCode)"
-          if ($p.ExitCode -ne 0) { exit 1 }
+          $fail = $false
+          foreach ($exe in @("dist\MelbyTune.exe", "dist-pasta\MelbyTune\MelbyTune.exe")) {
+            $dir = Join-Path $env:APPDATA "MelbyTune"
+            Remove-Item "$dir\selftest.txt","$dir\erro.log" -ErrorAction SilentlyContinue
+            $p = Start-Process -FilePath $exe -ArgumentList "--selftest" -PassThru -Wait
+            $r = if (Test-Path "$dir\selftest.txt") { (Get-Content "$dir\selftest.txt" -Raw).Trim() } else { "(selftest não gerou arquivo)" }
+            $e = if (Test-Path "$dir\erro.log") { (Get-Content "$dir\erro.log" -Raw).Trim() } else { "sem erro.log" }
+            $msg = "$exe -> exit $($p.ExitCode) | $r | $e"
+            Write-Host $msg
+            $one = ($msg -replace "\r?\n", " / ")
+            Write-Host "::notice title=Autoteste::$one"
+            if ($p.ExitCode -ne 0) { $fail = $true }
+          }
+          if ($fail) { exit 1 }
+
+      - name: Compactar a versão em pasta
+        run: Compress-Archive -Path dist-pasta\MelbyTune -DestinationPath MelbyTune-pasta.zip
 
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: MelbyTune
           path: dist/MelbyTune.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MelbyTune-pasta
+          path: MelbyTune-pasta.zip

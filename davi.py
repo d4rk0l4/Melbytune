@@ -6,7 +6,7 @@ import tweaks
 
 # Só ajustes leves. Fica de fora: SysMain (ruim em HD), prioridade de jogo e plano de energia máximo.
 TWEAK_IDS = ["bg_apps", "ads", "delivery_opt", "startup_delay", "menu_delay",
-             "transparency", "animations", "game_dvr", "telemetry", "activity", "websearch"]
+             "transparency", "animations", "game_dvr", "telemetry", "activity", "websearch", "edge_bg", "widgets"]
 
 # Apps de inicialização que costumam pesar e não fazem falta no boot
 STARTUP_JUNK = ("teams", "skype", "spotify", "adobe", "steam", "epicgames", "ituneshelper",
@@ -56,7 +56,7 @@ def run_pack(log):
         have = debloat.installed()
         labels = dict(debloat.APPS)
         for pkg in debloat.LEVE:
-            if pkg in have and debloat.remove(pkg)[0]:
+            if debloat.is_installed(pkg, have) and debloat.remove(pkg)[0]:
                 removed.append(labels.get(pkg, pkg))
     except Exception as e:
         log(f"• Debloat falhou: {e}")

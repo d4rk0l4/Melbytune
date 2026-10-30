@@ -14,13 +14,13 @@ import tkinter.messagebox as mb
 import customtkinter as ctk
 import psutil
 
-import debloat
 import tweaks
 from theme import (BG, FONT, HONEY, HONEY_H, MUTED, PANEL, PANEL2, PURPLE, PURPLE_H, SIDE, TEXT,
                    button, card, resource, title)
 from ui_apps import AppsPage
 from ui_clean import CleanPage
 from ui_davi import DaviPage
+from ui_debloat import DebloatPage
 from ui_security import SecurityPage
 from ui_startup import StartupPage
 from ui_tools import ToolsPage
@@ -97,8 +97,7 @@ class App(ctk.CTk):
         self.pages["Ajustes"] = self.frame()
         self.build_ajustes(self.pages["Ajustes"])
         self.pages["Inicialização"] = StartupPage(self.body)
-        self.pages["Debloat"] = self.frame()
-        self.build_debloat(self.pages["Debloat"])
+        self.pages["Debloat"] = DebloatPage(self.body)
         self.pages["Instalar apps"] = AppsPage(self.body)
         self.pages["Limpeza"] = CleanPage(self.body)
         self.pages["Segurança"] = SecurityPage(self.body)
@@ -273,68 +272,6 @@ class App(ctk.CTk):
         box.pack(fill="both", expand=True, padx=12, pady=12)
         box.insert("1.0", tweaks.preview(t) + "\n\n# Desfazer: desligue a chave (restaura o valor original salvo).")
         box.configure(state="disabled")
-
-    # ---------------------------------------------------------------- debloat
-    def build_debloat(self, p):
-        title(p, "Debloat",
-              "Remove apps que já vêm no Windows. A lista é fixa e segura: não inclui Loja, Calculadora, "
-              "Fotos, Paint nem Edge. Vale pra sua conta. Dá pra tentar reinstalar aqui; se não voltar, "
-              "baixe pela Microsoft Store.")
-        bar = ctk.CTkFrame(p, fg_color="transparent")
-        bar.pack(fill="x", padx=24)
-        button(bar, "Atualizar lista", self.refresh_debloat).pack(side="left")
-        button(bar, "Remover marcados", lambda: self.debloat_action(True), kind="danger").pack(side="left", padx=10)
-        button(bar, "Reinstalar marcados", lambda: self.debloat_action(False), kind="primary").pack(side="left")
-        self.deb_status = ctk.CTkLabel(p, text="", text_color=HONEY)
-        self.deb_status.pack(anchor="w", padx=24, pady=(8, 0))
-        self.deb_list = ctk.CTkScrollableFrame(p, fg_color=PANEL)
-        self.deb_list.pack(fill="both", expand=True, padx=24, pady=10)
-        self.deb_vars = {}
-        self.deb_installed = set()
-        self.after(400, self.refresh_debloat)  # depois do loop principal subir
-
-    def refresh_debloat(self):
-        self.deb_status.configure(text="Lendo apps instalados...")
-
-        def work():
-            have = debloat.installed()
-            self.after(0, lambda: self.render_debloat(have))
-        threading.Thread(target=work, daemon=True).start()
-
-    def render_debloat(self, have):
-        self.deb_installed = have
-        for w in self.deb_list.winfo_children():
-            w.destroy()
-        self.deb_vars = {}
-        for pkg, label in debloat.APPS:
-            row = ctk.CTkFrame(self.deb_list, fg_color="transparent")
-            row.pack(fill="x", pady=2)
-            var = ctk.BooleanVar(value=False)
-            self.deb_vars[pkg] = var
-            ctk.CTkCheckBox(row, text=label, variable=var, fg_color=PURPLE, hover_color=PURPLE_H,
-                            checkmark_color="#FFFFFF", text_color=TEXT).pack(side="left", padx=8)
-            ok = pkg in have
-            ctk.CTkLabel(row, text="instalado" if ok else "removido",
-                         text_color=TEXT if ok else MUTED).pack(side="right", padx=12)
-        self.deb_status.configure(text="")
-
-    def debloat_action(self, remove):
-        marked = [p for p, v in self.deb_vars.items()
-                  if v.get() and ((p in self.deb_installed) == remove)]
-        if not marked:
-            mb.showinfo("MelbyTune", "Marque apps " + ("instalados" if remove else "removidos") + " primeiro.")
-            return
-        verbo = "Remover" if remove else "Reinstalar"
-        if not mb.askyesno("MelbyTune", f"{verbo} {len(marked)} app(s)? Isso pode levar alguns minutos."):
-            return
-        self.deb_status.configure(text="Trabalhando... não feche o app.")
-
-        def work():
-            for pkg in marked:
-                (debloat.remove if remove else debloat.reinstall)(pkg)
-            have = debloat.installed()
-            self.after(0, lambda: self.render_debloat(have))
-        threading.Thread(target=work, daemon=True).start()
 
     # ---------------------------------------------------------------- sistema
     def build_sistema(self, p):
