@@ -73,7 +73,7 @@ def edge_remove():
     if not edge_installed():
         return True, "Edge removido. O Windows Update pode instalar de novo numa atualização grande."
     return False, (f"O Windows bloqueou a remoção do Edge (código {r.returncode}). Em muitos PCs e regiões a "
-                   "Microsoft não deixa remover por comando. Alternativa: em Ajustes, ligue 'Edge sem rodar "
+                   "Microsoft não deixa remover por comando. Alternativa: na aba Otimização, ligue 'Edge sem rodar "
                    "em segundo plano', que tira quase todo o peso dele.")
 
 
