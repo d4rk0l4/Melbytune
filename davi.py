@@ -64,4 +64,4 @@ def run_pack(log):
 
     log("")
     log("Pronto! Reinicie o notebook pra tudo fazer efeito.")
-    log("Pra desfazer: aba Sistema > Restaurar tudo (ajustes) e aba Inicialização (programas).")
+    log("Pra desfazer: aba Configurações > Restaurar tudo (ajustes) e aba Inicialização (programas).")

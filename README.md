@@ -53,10 +53,10 @@ python main.py
 ## Como a reversão dos ajustes funciona
 Antes de mudar qualquer chave, o app salva o valor original em `%APPDATA%\MelbyTune\backup.json`.
 Desligar o ajuste restaura esse valor (ou apaga a chave, se ela não existia).
-"Restaurar tudo" (aba Sistema) desfaz todos os ajustes. Debloat e Inicialização têm os próprios botões.
+"Restaurar tudo" (aba Configurações) desfaz todos os ajustes. Debloat e Inicialização têm os próprios botões.
 
 ## Mexer no código
-- Novo ajuste: `tweaks.py`, adicione um `Tweak(...)` em `TWEAKS` (aparece sozinho na aba Ajustes).
+- Novo ajuste: `tweaks.py`, adicione um `Tweak(...)` em `TWEAKS` (aparece sozinho na aba Otimização ou Desempenho).
 - Novo app no Debloat: `debloat.py`. Novo app pra instalar: `installer.py` (id do winget).
 - Valores das placas de vídeo: `gpus.py`.
 - Logo e ícone: pasta `assets/` (troque `logo.png`, `icon.png` e `icon.ico`).

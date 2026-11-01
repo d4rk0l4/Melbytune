@@ -20,11 +20,13 @@ def _seg(parent, values, default, command=None):
 
 
 class ToolsPage(ctk.CTkFrame):
-    def __init__(self, parent):
+    def __init__(self, parent, app=None):
         super().__init__(parent, fg_color="transparent")
-        title(self, "Ferramentas", "Testes rápidos e comparador de placas de vídeo.")
-        tv = tabs(self, ["Teste de CPS", "Teste de monitor", "Velocidade", "Comparar placas"])
+        title(self, "Ferramentas", "Rodo esse jogo?, testes rápidos e comparador de placas de vídeo.")
+        tv = tabs(self, ["Rodo esse jogo?", "Teste de CPS", "Teste de monitor", "Velocidade", "Comparar placas"])
         tv.pack(fill="both", expand=True, padx=12, pady=(0, 10))
+        from ui_gamecheck import GameTab
+        self.game = GameTab(tv.tab("Rodo esse jogo?"), app)
         self.cps = CpsTab(tv.tab("Teste de CPS"))
         self.monitor = MonitorTab(tv.tab("Teste de monitor"), self)
         self.speed = SpeedTab(tv.tab("Velocidade"))
